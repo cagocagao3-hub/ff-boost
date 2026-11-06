@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -18,12 +18,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3.2.1
-      with:
-        log-accepted-android-sdk-licenses: false
+    # Cria o arquivo local.properties apontando para o SDK pré-instalado do GitHub
+    - name: Configurar SDK Path
+      run: echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
 
-    - name: Build with Gradle
+    - name: Build com Gradle
       run: gradle assembleDebug --stacktrace
 
     - name: Upload APK
