@@ -21,33 +21,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Build APK
+    - name: Build with Gradle
       run: |
-        mkdir -p app/build
-        # Compila os recursos
-        aapt2 compile --dir app/src/main/res -o app/build/res.zip
-        # Gera o R.java e base.apk
-        aapt2 link -o app/build/base.apk -I $ANDROID_HOME/platforms/android-34/android.jar --manifest app/src/main/AndroidManifest.xml app/build/res.zip --java app/build/gen
-        
-        # Compila o Java
-        mkdir -p app/build/classes
-        javac -d app/build/classes -classpath $ANDROID_HOME/platforms/android-34/android.jar app/src/main/java/com/sualoja/ffboost/*.java app/build/gen/com/sualoja/ffboost/R.java
-        
-        # Gera o DEX
-        d8 --lib $ANDROID_HOME/platforms/android-34/android.jar --output app/build/ app/build/classes/com/sualoja/ffboost/*.class
-        
-        # Empacota
-        cd app/build
-        zip -j base.apk classes.dex
-        cd ../..
-
-    - name: Sign APK
-      run: |
-        keytool -genkey -keystore release.keystore -alias boost -keyalg RSA -keysize 2048 -validity 10000 -storepass boost123 -keypass boost123 -dname "CN=FFBoost"
-        apksigner sign --ks release.keystore --ks-pass pass:boost123 --key-pass pass:boost123 --min-sdk-version 21 --out FFBoost.apk app/build/base.apk
+        gradle wrapper
+        ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: FFBoost-APK
-        path: FFBoost.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
